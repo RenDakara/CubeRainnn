@@ -58,13 +58,14 @@ public class DualSpawner : MonoBehaviour
         if (rb != null)
             rb.velocity = Vector3.zero;
 
+        _totalCubeSpawned++;
+
         cube.gameObject.SetActive(true);
         cube.ResetState();
 
-        cube.OnReadyToReturn -= OnCubeReturned;
-        cube.OnReadyToReturn += OnCubeReturned;
+        cube.ReadyToReturn -= OnCubeReturned;
+        cube.ReadyToReturn += OnCubeReturned;
 
-        _totalBombSpawned++;
     }
 
     private void PrepareBomb(Bomb bomb)
@@ -80,13 +81,14 @@ public class DualSpawner : MonoBehaviour
             rb.useGravity = true;
         }
 
+        _totalBombSpawned++;
+
         bomb.gameObject.SetActive(true);
         bomb.ResetState();
 
-        bomb.OnReadyToReturn -= OnBombReturned;
-        bomb.OnReadyToReturn += OnBombReturned;
+        bomb.ReadyToReturn -= OnBombReturned;
+        bomb.ReadyToReturn += OnBombReturned;
 
-        _totalBombSpawned++;
     }
 
     private void SpawnCube()
