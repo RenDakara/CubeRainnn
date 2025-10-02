@@ -5,15 +5,15 @@ using UnityEngine;
 
 public class Bomb : MonoBehaviour, IPoolableObject
 {
-    [SerializeField] private float _radius = 10f;
-    [SerializeField] private float _force = 700f;
     private int _random;
+    private Exploder _exploder;
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
-    public event Action<MonoBehaviour> OnReadyToReturn;
+    public event Action<MonoBehaviour> ReadyToReturn;
 
     private void Awake()
     {
+        _exploder = GetComponent<Exploder>();
         _random = UnityEngine.Random.Range(2, 6);
         _wait = new WaitForSeconds(_random);
     }
@@ -22,7 +22,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
     {
         _coroutine = StartCoroutine(FadeAndExplodeCoroutine(() =>
         {
-            OnReadyToReturn?.Invoke(this);
+            ReadyToReturn?.Invoke(this);
             onComplete?.Invoke();
         }));
     }
@@ -47,24 +47,10 @@ public class Bomb : MonoBehaviour, IPoolableObject
         material.color = new Color(color.r, color.g, color.b, 0f);
         yield return _wait;
 
-        Explode();
+        _exploder.Explode();
 
         onComplete?.Invoke();
     }
 
-    private void Explode()
-    {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _radius);
-        
-        foreach (Collider collider in colliders)
-        {
-            Rigidbody rb = collider.attachedRigidbody;
-            if (rb != null)
-                rb.AddExplosionForce(_force,transform.position,_radius);
-        }
-    }
-
-    public void ResetState()
-    {
-    }
+    public void ResetState() { }   
 }
