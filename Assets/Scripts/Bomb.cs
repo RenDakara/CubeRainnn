@@ -9,10 +9,12 @@ public class Bomb : MonoBehaviour, IPoolableObject
     private Exploder _exploder;
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
+    private Renderer _renderer;
     public event Action<MonoBehaviour> ReadyToReturn;
 
     private void Awake()
     {
+        _renderer = gameObject.GetComponent<Renderer>();
         _exploder = GetComponent<Exploder>();
         _random = UnityEngine.Random.Range(2, 6);
         _wait = new WaitForSeconds(_random);
@@ -29,8 +31,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
 
     private IEnumerator FadeAndExplodeCoroutine(Action onComplete)
     {
-        Renderer renderer = gameObject.GetComponent<Renderer>();
-        Material material = renderer.material;
+        Material material = _renderer.material;
         Color color = material.color;
 
         float duration = _random;
