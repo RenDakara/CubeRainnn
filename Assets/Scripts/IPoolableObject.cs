@@ -3,6 +3,6 @@ using UnityEngine;
 
 public interface IPoolableObject
 {
-    event Action<MonoBehaviour> OnReadyToReturn;
+    event Action<MonoBehaviour> ReadyToReturn;
     void ResetState();
 }
