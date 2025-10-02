@@ -5,14 +5,11 @@ using UnityEngine;
 
 public class Cube : MonoBehaviour, IPoolableObject
 {
+    [SerializeField] private int[] _layers;
     private ColorChanger _colorChanger;
     private Coroutine _coroutine;
     private HashSet<int> _touchedLayers = new HashSet<int>();
-    private int[] _layers;
     private int _random;
-    private string _layerName1 = "Plane1";
-    private string _layerName2 = "Plane2";
-    private string _layerName3 = "Plane3";
     private WaitForSeconds _wait;
     public event Action<MonoBehaviour> ReadyToReturn;
 
@@ -21,13 +18,6 @@ public class Cube : MonoBehaviour, IPoolableObject
         _colorChanger = GetComponent<ColorChanger>();
         _random = UnityEngine.Random.Range(2, 6);
         _wait = new WaitForSeconds(_random);
-
-        _layers = new int[]
-        {
-            LayerMask.NameToLayer(_layerName1),
-            LayerMask.NameToLayer(_layerName2),
-            LayerMask.NameToLayer(_layerName3)
-        };
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -38,6 +28,10 @@ public class Cube : MonoBehaviour, IPoolableObject
         {
             _colorChanger.ChangeColor(gameObject);
             _touchedLayers.Add(colLayer);
+
+            if(_coroutine != null) 
+                StopCoroutine(_coroutine);
+
             _coroutine = StartCoroutine(DestroyCube());
         }
     }
