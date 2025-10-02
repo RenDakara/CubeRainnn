@@ -39,8 +39,8 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
 
         obj.gameObject.SetActive(true);
 
-        obj.OnReadyToReturn -= ReleaseObject;
-        obj.OnReadyToReturn += ReleaseObject;
+        obj.ReadyToReturn -= ReleaseObject;
+        obj.ReadyToReturn += ReleaseObject;
 
         obj.ResetState();
     }
