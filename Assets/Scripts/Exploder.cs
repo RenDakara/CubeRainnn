@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Exploder : MonoBehaviour
@@ -13,9 +11,10 @@ public class Exploder : MonoBehaviour
 
         foreach (Collider collider in colliders)
         {
-            Rigidbody rb = collider.attachedRigidbody;
-            if (rb != null)
-                rb.AddExplosionForce(_force, transform.position, _radius);
+          if(collider.TryGetComponent<Rigidbody>(out Rigidbody rigidbody))
+            {
+                rigidbody.AddExplosionForce(_force, transform.position, _radius);
+            }
         }
     }
 }
