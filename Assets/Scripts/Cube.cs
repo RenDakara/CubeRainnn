@@ -11,7 +11,7 @@ public class Cube : MonoBehaviour, IPoolableObject
     private HashSet<int> _touchedLayers = new HashSet<int>();
     private int _random;
     private WaitForSeconds _wait;
-    public event Action<MonoBehaviour> ReadyToReturn;
+    public event Action<IPoolableObject> ReadyToReturn;
 
     private void Awake()
     {

@@ -7,13 +7,15 @@ public class Bomb : MonoBehaviour, IPoolableObject
 {
     private int _random;
     private Exploder _exploder;
+    private ColorChanger _colorChanger;
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
     private Renderer _renderer;
-    public event Action<MonoBehaviour> ReadyToReturn;
+    public event Action<IPoolableObject> ReadyToReturn;
 
     private void Awake()
     {
+        _colorChanger = GetComponent<ColorChanger>();
         _renderer = gameObject.GetComponent<Renderer>();
         _exploder = GetComponent<Exploder>();
         _random = UnityEngine.Random.Range(2, 6);
@@ -31,9 +33,6 @@ public class Bomb : MonoBehaviour, IPoolableObject
 
     private IEnumerator FadeAndExplodeCoroutine(Action onComplete)
     {
-        Material material = _renderer.material;
-        Color color = material.color;
-
         float duration = _random;
         float elapsed = 0f;
 
@@ -41,11 +40,11 @@ public class Bomb : MonoBehaviour, IPoolableObject
         {
             elapsed += Time.deltaTime;
             float alpha = Mathf.Lerp(1f,0f,elapsed/duration);
-            material.color = new Color(color.r, color.g, color.b, alpha);
+            _colorChanger.Fade(gameObject, alpha);
             yield return null;
         }
 
-        material.color = new Color(color.r, color.g, color.b, 0f);
+        _colorChanger.Fade(gameObject, 0f);
         yield return _wait;
 
         _exploder.Explode();

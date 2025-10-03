@@ -1,134 +1,65 @@
-using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class DualSpawner : MonoBehaviour
+public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableObject
 {
-    [SerializeField] private Cube _cubePrefab;
-    [SerializeField] private Bomb _bombPrefab;
-    [SerializeField] private Transform _startPoint;
+    [SerializeField] public Transform startPoint;
+    [SerializeField] private T prefab;
+    [SerializeField] private float repeatRate = 6f;
+    [SerializeField] private int poolCapacity = 5;
+    [SerializeField] private int poolMaxSize = 5;
 
-    [SerializeField] private float _repeatRate = 6f;
-    [SerializeField] private int _poolCapacity = 5;
-    [SerializeField] private int _poolMaxSize = 5;
-
-    [SerializeField] private TextMeshProUGUI _text;
-
-    private ObjectPool<Cube> _cubePool;
-    private ObjectPool<Bomb> _bombPool;
-
-    private int _totalCubeSpawned = 0;
-    private int _totalCubeCreated = 0;
-
-    private int _totalBombSpawned = 0;
-    private int _totalBombCreated = 0;
+    protected ObjectPool<T> pool;
 
     private void Awake()
     {
-        _cubePool = new ObjectPool<Cube>(
-            () => { _totalCubeCreated++; return Instantiate(_cubePrefab); },
-            obj => PrepareCube(obj),
-            obj => obj.gameObject.SetActive(false),
+        pool = new ObjectPool<T>(
+            () => Instantiate(prefab),
+            obj => OnGet(obj),
+            obj => OnRelease(obj),
             obj => Destroy(obj.gameObject),
-            false, _poolCapacity, _poolMaxSize);
-
-        _bombPool = new ObjectPool<Bomb>(
-            () => { _totalCubeCreated++; return Instantiate(_bombPrefab); },
-            obj => PrepareBomb(obj),
-            obj => obj.gameObject.SetActive(false),
-            obj => { },
-            false, _poolCapacity, _poolMaxSize);
+            collectionCheck: false,
+            defaultCapacity: poolCapacity,
+            maxSize: poolMaxSize);
     }
 
-    private void Start()
+    protected virtual void Start()
     {
-        InvokeRepeating(nameof(SpawnCube), 0f, _repeatRate);
+        InvokeRepeating(nameof(Spawn), 0f, repeatRate);
     }
 
-    private void Update()
+    protected virtual void OnGet(T obj)
     {
-        _text.text = ($"Cubes: Spawned={GetTotalCubeSpawned()}, Created={GetCreatedCubeCount()}, Active={GetActiveCubeCount()}, Bombs: Spawned= {GetTotalBombSpawned()}, Created={GetCreatedBombCount()}, Active={GetActiveBombCount()}");
-    }
+        obj.transform.position = startPoint.position;
 
-    private void PrepareCube(Cube cube)
-    {
-        cube.transform.position = _startPoint.position;
-        Rigidbody rb = cube.GetComponent<Rigidbody>();
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
             rb.velocity = Vector3.zero;
 
-        _totalCubeSpawned++;
+        obj.gameObject.SetActive(true);
 
-        cube.gameObject.SetActive(true);
-        cube.ResetState();
+        obj.ReadyToReturn -= ReturnToPool;
+        obj.ReadyToReturn += ReturnToPool;
 
-        cube.ReadyToReturn -= OnCubeReturned;
-        cube.ReadyToReturn += OnCubeReturned;
-
+        obj.ResetState();
     }
 
-    private void PrepareBomb(Bomb bomb)
+    protected virtual void OnRelease(T obj)
     {
-        bomb.transform.position = _startPoint.position;
-        Rigidbody rb = bomb.GetComponent<Rigidbody>();
-
-        if (rb != null)
-        {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = false;
-            rb.useGravity = true;
-        }
-
-        _totalBombSpawned++;
-
-        bomb.gameObject.SetActive(true);
-        bomb.ResetState();
-
-        bomb.ReadyToReturn -= OnBombReturned;
-        bomb.ReadyToReturn += OnBombReturned;
-
+        obj.gameObject.SetActive(false);
     }
 
-    private void SpawnCube()
+    protected virtual void Spawn()
     {
-        _cubePool.Get();
+        pool.Get();
     }
 
-    private void OnCubeReturned(MonoBehaviour cubeMono)
+    protected virtual void ReturnToPool(IPoolableObject poolable)
     {
-        Cube cube = cubeMono as Cube;
-        if (cube == null) return;
-
-        Vector3 pos = cube.transform.position;
-        _cubePool.Release(cube);
-
-        Bomb bomb = _bombPool.Get();
-        bomb.transform.position = pos;
-
-        bomb.StartFadeAndExplode(() =>
-        {
-            if (bomb != null)
-            {
-                _bombPool.Release(bomb);
-            }
-        });
+        if (poolable is T tObj)
+            pool.Release(tObj);
     }
 
-    private void OnBombReturned(MonoBehaviour bombMono)
-    {
-        Bomb bomb = bombMono as Bomb;
-        if (bomb == null) return;
-
-        _bombPool.Release(bomb);
-    }
-
-    public int GetActiveCubeCount() => _cubePool.CountActive;
-    public int GetCreatedCubeCount() => _totalCubeCreated;
-    public int GetTotalCubeSpawned() => _totalCubeSpawned;
-
-    public int GetActiveBombCount() => _bombPool.CountActive;
-    public int GetCreatedBombCount() => _totalBombCreated;
-    public int GetTotalBombSpawned() => _totalBombSpawned;
+    public int GetActiveCount() => pool.CountActive;
+    public int GetCreatedCount() => pool.CountInactive + pool.CountActive;
 }

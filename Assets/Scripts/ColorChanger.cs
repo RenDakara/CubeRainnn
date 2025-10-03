@@ -8,4 +8,12 @@ public class ColorChanger : MonoBehaviour
         Renderer renderer = obj.GetComponent<Renderer>();
         renderer.material.color = color;
     }
+
+    public void Fade(GameObject obj, float alpf)
+    {
+        Renderer renderer = obj.GetComponent<Renderer>();
+        Material material = renderer.material;
+        Color color = material.color;
+        material.color = new Color(color.r, color.g, color.b, alpf);
+    }
 }
