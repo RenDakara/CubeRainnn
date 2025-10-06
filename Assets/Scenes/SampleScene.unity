@@ -453,10 +453,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e259de4d9089c224997e3e0c9662b907, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeStatsText: {fileID: 104972072}
-  cubeSpawner: {fileID: 1215236132}
-  bombStatsText: {fileID: 53804357}
-  bombSpawner: {fileID: 1452814170}
+  _cubeStatsText: {fileID: 104972072}
+  _cubeSpawner: {fileID: 1215236132}
+  _bombStatsText: {fileID: 53804357}
+  _bombSpawner: {fileID: 1452814170}
 --- !u!4 &574753894
 Transform:
   m_ObjectHideFlags: 0
