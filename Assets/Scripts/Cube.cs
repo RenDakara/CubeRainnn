@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public delegate void CubeReturnHandler(Cube cube);
+
 public class Cube : MonoBehaviour, IPoolableObject
 {
     [SerializeField] private int[] _layers;
@@ -11,7 +13,8 @@ public class Cube : MonoBehaviour, IPoolableObject
     private HashSet<int> _touchedLayers = new HashSet<int>();
     private int _random;
     private WaitForSeconds _wait;
-    public event Action<IPoolableObject> ReadyToReturn;
+
+    public event CubeReturnHandler ReadyToReturn;
 
     private void Awake()
     {
@@ -29,7 +32,7 @@ public class Cube : MonoBehaviour, IPoolableObject
             _colorChanger.ChangeColor(gameObject);
             _touchedLayers.Add(colLayer);
 
-            if(_coroutine != null) 
+            if (_coroutine != null)
                 StopCoroutine(_coroutine);
 
             _coroutine = StartCoroutine(DestroyCube());
@@ -40,7 +43,7 @@ public class Cube : MonoBehaviour, IPoolableObject
     {
         yield return _wait;
         ResetState();
-        Renderer renderer = gameObject.GetComponent<Renderer>();
+        var renderer = GetComponent<Renderer>();
         renderer.material.color = Color.white;
         ReadyToReturn?.Invoke(this);
     }

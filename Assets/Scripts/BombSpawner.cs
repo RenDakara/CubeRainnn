@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public class BombSpawner : DualSpawner<Bomb>
+public class BombSpawner : GenericSpawner<Bomb>
 {
-    protected override void Start() { }
-
     protected override void OnGet(Bomb bomb)
     {
+        base.OnGet(bomb);
+
         Rigidbody rb = bomb.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -15,17 +15,15 @@ public class BombSpawner : DualSpawner<Bomb>
             rb.useGravity = true;
         }
 
-        bomb.gameObject.SetActive(true);
         bomb.ResetState();
 
         bomb.ReadyToReturn -= OnBombReturned;
         bomb.ReadyToReturn += OnBombReturned;
     }
 
-    private void OnBombReturned(IPoolableObject poolable)
+    private void OnBombReturned(Bomb bomb)
     {
-        if (poolable is Bomb bomb)
-            pool.Release(bomb);
+        pool.Release(bomb);
     }
 
     public Bomb GetBombFromPoolAtPosition(Vector3 position)

@@ -1,7 +1,8 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableObject
+public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableObject
 {
     [SerializeField] public Transform startPoint;
     [SerializeField] private T prefab;
@@ -9,6 +10,7 @@ public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableOb
     [SerializeField] private int poolCapacity = 5;
     [SerializeField] private int poolMaxSize = 5;
 
+    private Coroutine _spawnCoroutine;
     protected ObjectPool<T> pool;
 
     private void Awake()
@@ -25,7 +27,22 @@ public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableOb
 
     protected virtual void Start()
     {
-        InvokeRepeating(nameof(Spawn), 0f, repeatRate);
+        _spawnCoroutine = StartCoroutine(SpawnRoutine());
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_spawnCoroutine != null)
+            StopCoroutine(_spawnCoroutine);
+    }
+
+    protected virtual IEnumerator SpawnRoutine()
+    {
+        while (true)
+        {
+            Spawn();
+            yield return new WaitForSeconds(repeatRate);
+        }
     }
 
     protected virtual void OnGet(T obj)
@@ -37,11 +54,6 @@ public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableOb
             rb.velocity = Vector3.zero;
 
         obj.gameObject.SetActive(true);
-
-        obj.ReadyToReturn -= ReturnToPool;
-        obj.ReadyToReturn += ReturnToPool;
-
-        obj.ResetState();
     }
 
     protected virtual void OnRelease(T obj)
@@ -52,12 +64,6 @@ public class DualSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableOb
     protected virtual void Spawn()
     {
         pool.Get();
-    }
-
-    protected virtual void ReturnToPool(IPoolableObject poolable)
-    {
-        if (poolable is T tObj)
-            pool.Release(tObj);
     }
 
     public int GetActiveCount() => pool.CountActive;

@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class SpawnerUIManager : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI cubeStatsText;
-    [SerializeField] private CubeSpawner cubeSpawner;
+    [SerializeField] private TextMeshProUGUI _cubeStatsText;
+    [SerializeField] private CubeSpawner _cubeSpawner;
 
-    [SerializeField] private TextMeshProUGUI bombStatsText;
-    [SerializeField] private BombSpawner bombSpawner;
+    [SerializeField] private TextMeshProUGUI _bombStatsText;
+    [SerializeField] private BombSpawner _bombSpawner;
 
     private void Update()
     {
-        cubeStatsText.text = $"Cubes: Active={cubeSpawner.GetActiveCount()}, Created={cubeSpawner.GetCreatedCount()}";
-        bombStatsText.text = $"Bombs: Active={bombSpawner.GetActiveCount()}, Created={bombSpawner.GetCreatedCount()}";
+        _cubeStatsText.text = $"Cubes: Active={_cubeSpawner.GetActiveCount()}, Created={_cubeSpawner.GetCreatedCount()}";
+        _bombStatsText.text = $"Bombs: Active={_bombSpawner.GetActiveCount()}, Created={_bombSpawner.GetCreatedCount()}";
     }
 }

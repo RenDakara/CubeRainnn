@@ -1,7 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+public delegate void BombReturnHandler(Bomb bomb);
 
 public class Bomb : MonoBehaviour, IPoolableObject
 {
@@ -10,13 +11,12 @@ public class Bomb : MonoBehaviour, IPoolableObject
     private ColorChanger _colorChanger;
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
-    private Renderer _renderer;
-    public event Action<IPoolableObject> ReadyToReturn;
+
+    public event BombReturnHandler ReadyToReturn;
 
     private void Awake()
     {
         _colorChanger = GetComponent<ColorChanger>();
-        _renderer = gameObject.GetComponent<Renderer>();
         _exploder = GetComponent<Exploder>();
         _random = UnityEngine.Random.Range(2, 6);
         _wait = new WaitForSeconds(_random);
@@ -24,6 +24,9 @@ public class Bomb : MonoBehaviour, IPoolableObject
 
     public void StartFadeAndExplode(Action onComplete)
     {
+        if (_coroutine != null)
+            StopCoroutine(_coroutine);
+
         _coroutine = StartCoroutine(FadeAndExplodeCoroutine(() =>
         {
             ReadyToReturn?.Invoke(this);
@@ -39,7 +42,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f,0f,elapsed/duration);
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
             _colorChanger.Fade(gameObject, alpha);
             yield return null;
         }
@@ -52,5 +55,5 @@ public class Bomb : MonoBehaviour, IPoolableObject
         onComplete?.Invoke();
     }
 
-    public void ResetState() { }   
+    public void ResetState() { }
 }
