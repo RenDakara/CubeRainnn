@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public delegate void BombReturnHandler(Bomb bomb);
-
 public class Bomb : MonoBehaviour, IPoolableObject
 {
     private int _random;
@@ -12,7 +10,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
 
-    public event BombReturnHandler ReadyToReturn;
+    public event Action<IPoolableObject> ReadyToReturn;
 
     private void Awake()
     {
@@ -55,5 +53,15 @@ public class Bomb : MonoBehaviour, IPoolableObject
         onComplete?.Invoke();
     }
 
-    public void ResetState() { }
+    public void ResetState()
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
 }

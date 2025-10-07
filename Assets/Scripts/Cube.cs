@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public delegate void CubeReturnHandler(Cube cube);
-
 public class Cube : MonoBehaviour, IPoolableObject
 {
     [SerializeField] private int[] _layers;
@@ -14,7 +12,7 @@ public class Cube : MonoBehaviour, IPoolableObject
     private int _random;
     private WaitForSeconds _wait;
 
-    public event CubeReturnHandler ReadyToReturn;
+    public event Action<IPoolableObject> ReadyToReturn;
 
     private void Awake()
     {
@@ -45,6 +43,7 @@ public class Cube : MonoBehaviour, IPoolableObject
         ResetState();
         var renderer = GetComponent<Renderer>();
         renderer.material.color = Color.white;
+
         ReadyToReturn?.Invoke(this);
     }
 

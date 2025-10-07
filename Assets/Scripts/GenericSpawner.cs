@@ -1,24 +1,27 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
 public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolableObject
 {
-    [SerializeField] public Transform startPoint;
-    [SerializeField] private T prefab;
-    [SerializeField] private float repeatRate = 6f;
-    [SerializeField] private int poolCapacity = 5;
-    [SerializeField] private int poolMaxSize = 5;
+    [SerializeField] protected Transform startPoint;
+    [SerializeField] protected T prefab;
+    [SerializeField] protected float repeatRate = 6f;
+    [SerializeField] protected int poolCapacity = 5;
+    [SerializeField] protected int poolMaxSize = 5;
 
-    private Coroutine _spawnCoroutine;
     protected ObjectPool<T> pool;
+    private Coroutine spawnCoroutine;
 
-    private void Awake()
+    public event Action OnPoolChanged;
+
+    protected virtual void Awake()
     {
         pool = new ObjectPool<T>(
             () => Instantiate(prefab),
-            obj => OnGet(obj),
-            obj => OnRelease(obj),
+            OnGet,
+            OnRelease,
             obj => Destroy(obj.gameObject),
             collectionCheck: false,
             defaultCapacity: poolCapacity,
@@ -27,13 +30,7 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
 
     protected virtual void Start()
     {
-        _spawnCoroutine = StartCoroutine(SpawnRoutine());
-    }
-
-    protected virtual void OnDestroy()
-    {
-        if (_spawnCoroutine != null)
-            StopCoroutine(_spawnCoroutine);
+        spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
     protected virtual IEnumerator SpawnRoutine()
@@ -45,25 +42,42 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
         }
     }
 
+    protected virtual void OnDestroy()
+    {
+        if (spawnCoroutine != null)
+            StopCoroutine(spawnCoroutine);
+    }
+
     protected virtual void OnGet(T obj)
     {
         obj.transform.position = startPoint.position;
-
-        Rigidbody rb = obj.GetComponent<Rigidbody>();
-        if (rb != null)
-            rb.velocity = Vector3.zero;
-
         obj.gameObject.SetActive(true);
+
+        obj.ReadyToReturn -= ReturnToPool;
+        obj.ReadyToReturn += ReturnToPool;
+
+        obj.ResetState();
+
+        OnPoolChanged?.Invoke();
     }
 
     protected virtual void OnRelease(T obj)
     {
+        obj.ReadyToReturn -= ReturnToPool;
         obj.gameObject.SetActive(false);
+
+        OnPoolChanged?.Invoke();
     }
 
     protected virtual void Spawn()
     {
         pool.Get();
+    }
+
+    protected virtual void ReturnToPool(IPoolableObject poolable)
+    {
+        if (poolable is T tObj)
+            pool.Release(tObj);
     }
 
     public int GetActiveCount() => pool.CountActive;

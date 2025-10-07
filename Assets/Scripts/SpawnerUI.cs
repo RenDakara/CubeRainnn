@@ -1,17 +1,27 @@
 using TMPro;
 using UnityEngine;
+using System;
 
-public class SpawnerUIManager : MonoBehaviour
+public class SpawnerUIManager<TSpawner, TObject> : MonoBehaviour
+    where TSpawner : GenericSpawner<TObject>
+    where TObject : MonoBehaviour, IPoolableObject
 {
-    [SerializeField] private TextMeshProUGUI _cubeStatsText;
-    [SerializeField] private CubeSpawner _cubeSpawner;
+    [SerializeField] private TSpawner spawner;
+    [SerializeField] private TextMeshProUGUI statsText;
 
-    [SerializeField] private TextMeshProUGUI _bombStatsText;
-    [SerializeField] private BombSpawner _bombSpawner;
-
-    private void Update()
+    private void OnEnable()
     {
-        _cubeStatsText.text = $"Cubes: Active={_cubeSpawner.GetActiveCount()}, Created={_cubeSpawner.GetCreatedCount()}";
-        _bombStatsText.text = $"Bombs: Active={_bombSpawner.GetActiveCount()}, Created={_bombSpawner.GetCreatedCount()}";
+        spawner.OnPoolChanged += UpdateUI;
+        UpdateUI();
+    }
+
+    private void OnDisable()
+    {
+        spawner.OnPoolChanged -= UpdateUI;
+    }
+
+    private void UpdateUI()
+    {
+        statsText.text = $"Active: {spawner.GetActiveCount()}, Created: {spawner.GetCreatedCount()}";
     }
 }
