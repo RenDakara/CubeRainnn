@@ -1,24 +1,10 @@
 using TMPro;
 using UnityEngine;
 
-public class CubeSpawnerUI : MonoBehaviour
+public class CubeSpawnerUI : SpawnerUIManager<CubeSpawner, Cube>
 {
-    [SerializeField] private CubeSpawner _cubeSpawner;
-    [SerializeField] private TextMeshProUGUI _statsText;
-
-    private void OnEnable()
+    protected override void UpdateUI()
     {
-        _cubeSpawner.OnPoolChanged += UpdateUI;
-        UpdateUI();
-    }
-
-    private void OnDisable()
-    {
-        _cubeSpawner.OnPoolChanged -= UpdateUI;
-    }
-
-    private void UpdateUI()
-    {
-        _statsText.text = $"Cubes: Active={_cubeSpawner.GetActiveCount()}, Created={_cubeSpawner.GetCreatedCount()}";
+        statsText.text = $"Cubes: Active={spawner.GetActiveCount()}, Created={spawner.GetCreatedCount()}";
     }
 }

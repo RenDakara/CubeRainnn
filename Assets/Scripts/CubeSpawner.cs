@@ -9,13 +9,15 @@ public class CubeSpawner : GenericSpawner<Cube>
     protected override void OnGet(Cube cube)
     {
         base.OnGet(cube);
-        cube.OnReturned -= OnCubeReturned;
+
         cube.OnReturned += OnCubeReturned;
         _totalCubeSpawned++;
     }
 
     private void OnCubeReturned(Cube cube)
     {
+        cube.OnReturned -= OnCubeReturned;  
+
         Vector3 pos = cube.transform.position;
         pool.Release(cube);
 
