@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -14,7 +13,7 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
     protected ObjectPool<T> pool;
     private Coroutine spawnCoroutine;
 
-    public event Action OnPoolChanged;
+    public event System.Action OnPoolChanged;
 
     protected virtual void Awake()
     {
@@ -52,10 +51,6 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
     {
         obj.transform.position = startPoint.position;
         obj.gameObject.SetActive(true);
-
-        obj.ReadyToReturn -= ReturnToPool;
-        obj.ReadyToReturn += ReturnToPool;
-
         obj.ResetState();
 
         OnPoolChanged?.Invoke();
@@ -63,9 +58,7 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
 
     protected virtual void OnRelease(T obj)
     {
-        obj.ReadyToReturn -= ReturnToPool;
         obj.gameObject.SetActive(false);
-
         OnPoolChanged?.Invoke();
     }
 
@@ -74,12 +67,7 @@ public class GenericSpawner<T> : MonoBehaviour where T : MonoBehaviour, IPoolabl
         pool.Get();
     }
 
-    protected virtual void ReturnToPool(IPoolableObject poolable)
-    {
-        if (poolable is T tObj)
-            pool.Release(tObj);
-    }
-
     public int GetActiveCount() => pool.CountActive;
     public int GetCreatedCount() => pool.CountInactive + pool.CountActive;
+
 }

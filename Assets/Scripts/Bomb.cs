@@ -10,7 +10,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
     private WaitForSeconds _wait;
     private Coroutine _coroutine;
 
-    public event Action<IPoolableObject> ReadyToReturn;
+    public event Action<Bomb> OnReturned;
 
     private void Awake()
     {
@@ -27,7 +27,7 @@ public class Bomb : MonoBehaviour, IPoolableObject
 
         _coroutine = StartCoroutine(FadeAndExplodeCoroutine(() =>
         {
-            ReadyToReturn?.Invoke(this);
+            OnReturned?.Invoke(this);
             onComplete?.Invoke();
         }));
     }

@@ -9,24 +9,23 @@ public class CubeSpawner : GenericSpawner<Cube>
     protected override void OnGet(Cube cube)
     {
         base.OnGet(cube);
+        cube.OnReturned -= OnCubeReturned;
+        cube.OnReturned += OnCubeReturned;
         _totalCubeSpawned++;
     }
 
-    private void OnCubeReturned(IPoolableObject poolable)
+    private void OnCubeReturned(Cube cube)
     {
-        if (poolable is Cube cube)
-        {
-            Vector3 pos = cube.transform.position;
-            pool.Release(cube);
+        Vector3 pos = cube.transform.position;
+        pool.Release(cube);
 
-            Bomb bomb = bombSpawner.GetBombFromPoolAtPosition(pos);
-            if (bomb != null)
+        Bomb bomb = bombSpawner.GetBombFromPoolAtPosition(pos);
+        if (bomb != null)
+        {
+            bomb.StartFadeAndExplode(() =>
             {
-                bomb.StartFadeAndExplode(() =>
-                {
-                    bombSpawner.ReleaseBombToPool(bomb);
-                });
-            }
+                bombSpawner.ReleaseBombToPool(bomb);
+            });
         }
     }
 }

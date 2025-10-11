@@ -12,7 +12,7 @@ public class Cube : MonoBehaviour, IPoolableObject
     private int _random;
     private WaitForSeconds _wait;
 
-    public event Action<IPoolableObject> ReadyToReturn;
+    public event Action<Cube> OnReturned;
 
     private void Awake()
     {
@@ -24,7 +24,6 @@ public class Cube : MonoBehaviour, IPoolableObject
     private void OnCollisionEnter(Collision collision)
     {
         int colLayer = collision.gameObject.layer;
-
         if (Array.IndexOf(_layers, colLayer) >= 0 && !_touchedLayers.Contains(colLayer))
         {
             _colorChanger.ChangeColor(gameObject);
@@ -41,10 +40,11 @@ public class Cube : MonoBehaviour, IPoolableObject
     {
         yield return _wait;
         ResetState();
+
         var renderer = GetComponent<Renderer>();
         renderer.material.color = Color.white;
 
-        ReadyToReturn?.Invoke(this);
+        OnReturned?.Invoke(this);
     }
 
     public void ResetState()
